@@ -1,5 +1,3 @@
-using System;
-
 namespace Psxbox.Utils.Helpers;
 
 public static class BooleanHelpers
