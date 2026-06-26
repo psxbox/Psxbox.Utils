@@ -31,6 +31,7 @@ public static class ValueUtils
         "float" or "single" => BitConverter.ToSingle(valueData),
         "double" => BitConverter.ToDouble(valueData),
         "ascii" => Encoding.ASCII.GetString(valueData),
+        "hex" => Convert.ToHexString(valueData),
         _ => throw new("Unsupported value type: " + valueType),
     };
 
