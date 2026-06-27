@@ -286,6 +286,9 @@ public static class Converters
         if (byteSwap || wordSwap)
         {
             var result = span.ToArray();
+            // Trailing bytes that don't fill a complete pair (byteSwap) or quad (wordSwap)
+            // are left unchanged. Callers should ensure Count is register-aligned (even for
+            // byteSwap, multiple-of-4 for wordSwap) to avoid silently partial-swapped output.
             if (wordSwap)
                 for (int i = 0; i + 3 < result.Length; i += 4)
                 {

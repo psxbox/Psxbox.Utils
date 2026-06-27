@@ -18,22 +18,23 @@ public static class ValueUtils
         _ => throw new("unsupported value type: " + valueType),
     };
 
-    public static object ConvertValueByType(ReadOnlySpan<byte> valueData, string valueType) => valueType switch
-    {
-        "byte" => valueData[0],
-        "int16" => BitConverter.ToInt16(valueData),
-        "int32" => BitConverter.ToInt32(valueData),
-        "int64" => BitConverter.ToInt64(valueData),
-        "uint16" => BitConverter.ToUInt16(valueData),
-        "uint32" => BitConverter.ToUInt32(valueData),
-        "uint64" => BitConverter.ToUInt64(valueData),
-        "half" => BitConverter.ToHalf(valueData),
-        "float" or "single" => BitConverter.ToSingle(valueData),
-        "double" => BitConverter.ToDouble(valueData),
-        "ascii" => Encoding.ASCII.GetString(valueData),
-        "hex" => Convert.ToHexString(valueData),
-        _ => throw new("Unsupported value type: " + valueType),
-    };
+    public static object ConvertValueByType(ReadOnlySpan<byte> valueData, string valueType) =>
+        valueType.ToLowerInvariant() switch
+        {
+            "byte" => valueData[0],
+            "int16" => BitConverter.ToInt16(valueData),
+            "int32" => BitConverter.ToInt32(valueData),
+            "int64" => BitConverter.ToInt64(valueData),
+            "uint16" => BitConverter.ToUInt16(valueData),
+            "uint32" => BitConverter.ToUInt32(valueData),
+            "uint64" => BitConverter.ToUInt64(valueData),
+            "half" => BitConverter.ToHalf(valueData),
+            "float" or "single" => BitConverter.ToSingle(valueData),
+            "double" => BitConverter.ToDouble(valueData),
+            "ascii" => Encoding.ASCII.GetString(valueData),
+            "hex" => Convert.ToHexString(valueData),
+            _ => throw new("Unsupported value type: " + valueType),
+        };
 
     public static bool IsFinite(object value)
     {
