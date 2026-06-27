@@ -266,25 +266,48 @@ public static class Converters
     }
 
     /// <summary>
-    /// Baytlarni <see cref="byteOrder"/> da berilgan bo'yicha tartiblash
+    /// Baytlarni <see cref="byteOrder"/> shabloniga asosan tartiblab qaytaradi.
+    /// Qo'llab-quvvatlanadigan qiymatlar: "0123" (o'zgarsiz), "1032" (bayt swap),
+    /// "2301" (so'z swap), "3210" (bayt + so'z swap).
+    /// Noma'lum shablonlar uchun eski xulq (uzunlik mos kelsa indeks bo'yicha) saqlanadi.
     /// </summary>
-    /// <param name="span">Baytlar massiv</param>
-    /// <param name="byteOrder">Baytlar ketmaketligi. (M: 0123)</param>
-    /// <returns>Tartiblangan baytlar massiv</returns>
+    public static bool IsByteSwap(string? byteOrder) => byteOrder is "1032" or "3210";
+
+    public static bool IsWordSwap(string? byteOrder) => byteOrder is "2301" or "3210";
+
     public static Span<byte> GetOrdered(Span<byte> span, string? byteOrder)
     {
-        if (byteOrder?.Length == 0 || span.Length != byteOrder?.Length) return span;
-        var result = new List<byte>();
+        if (string.IsNullOrEmpty(byteOrder) || byteOrder == "0123")
+            return span;
+
+        bool byteSwap = IsByteSwap(byteOrder);
+        bool wordSwap = IsWordSwap(byteOrder);
+
+        if (byteSwap || wordSwap)
+        {
+            var result = span.ToArray();
+            if (wordSwap)
+                for (int i = 0; i + 3 < result.Length; i += 4)
+                {
+                    (result[i],     result[i + 2]) = (result[i + 2], result[i]);
+                    (result[i + 1], result[i + 3]) = (result[i + 3], result[i + 1]);
+                }
+            if (byteSwap)
+                for (int i = 0; i + 1 < result.Length; i += 2)
+                    (result[i], result[i + 1]) = (result[i + 1], result[i]);
+            return result;
+        }
+
+        // Noma'lum shablon uchun eski xulq: uzunlik mos kelsa indeks bo'yicha tartiblaymiz
+        if (span.Length != byteOrder.Length) return span;
+        var fallback = new List<byte>(byteOrder.Length);
         foreach (var ch in byteOrder)
         {
             if (!char.IsDigit(ch))
-            {
                 throw new($"Invalid byte order {byteOrder}");
-            }
-
-            result.Add(span[byte.Parse(new string(ch, 1))]);
+            fallback.Add(span[byte.Parse(new string(ch, 1))]);
         }
-        return result.ToArray();
+        return fallback.ToArray();
     }
 
     /// <summary>
