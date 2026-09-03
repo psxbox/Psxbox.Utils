@@ -71,11 +71,26 @@ public static class Converters
     /// <returns></returns>
     public static string HexStringToString(string hex)
     {
-        var res = Enumerable.Range(0, hex.Length)
-                         .Where(x => x % 2 == 0)
-                         .Select(x => (char)Convert.ToByte(hex.Substring(x, 2), 16))
-                         .ToArray();
+        if (hex.Length % 2 != 0)
+            throw new ArgumentOutOfRangeException(nameof(hex), hex, "Hex string must have an even length.");
+
+        var res = new char[hex.Length / 2];
+        for (var i = 0; i < hex.Length; i += 2)
+        {
+            res[i / 2] = (char)((GetHexCharValue(hex[i]) << 4) | GetHexCharValue(hex[i + 1]));
+        }
         return new string(res);
+    }
+
+    private static int GetHexCharValue(char hex)
+    {
+        return hex switch
+        {
+            >= '0' and <= '9' => hex - '0',
+            >= 'a' and <= 'f' => hex - 'a' + 10,
+            >= 'A' and <= 'F' => hex - 'A' + 10,
+            _ => throw new FormatException($"Invalid hex character: {hex}")
+        };
     }
 
     /// <summary>
